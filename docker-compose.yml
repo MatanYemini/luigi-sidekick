@@ -1,0 +1,57 @@
+version: "3.8"
+
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: base-dev:latest
+    container_name: base_dev
+    environment:
+      # Forward your OpenAI API key so Codex works inside the container
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      # Forward your Anthropic API key so Claude Code works inside the container
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      # Optional Git identity (override on demand)
+      - GIT_AUTHOR_NAME=${GIT_NAME:-luigi}
+      - GIT_AUTHOR_EMAIL=${GIT_EMAIL:-luigi@getluigi.com}
+      - GIT_COMMITTER_NAME=${GIT_NAME:-luigi}
+      - GIT_COMMITTER_EMAIL=${GIT_EMAIL:-luigi@getluigi.com}
+    volumes:
+      # Mount the project into /workspace inside the container
+      - .:/workspace
+      # Optional: persist global npm installs between container runs
+      - npm_global:/usr/local/lib/node_modules
+      # Share host Git configuration (read‑only)
+      - ${HOME}/.gitconfig:/home/claudeuser/.gitconfig:ro
+      # Mount Claude config if exists
+      - ./claude.json:/home/claudeuser/.claude.json:ro
+    tty: true
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: base-dev:latest
+    container_name: repo_api
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      # Optional Git identity (override on demand)
+      - GIT_AUTHOR_NAME=${GIT_NAME:-luigi}
+      - GIT_AUTHOR_EMAIL=${GIT_EMAIL:-luigi@getluigi.com}
+      - GIT_COMMITTER_NAME=${GIT_NAME:-luigi}
+      - GIT_COMMITTER_EMAIL=${GIT_EMAIL:-luigi@getluigi.com}
+    volumes:
+      - .:/workspace
+      - ${HOME}/.gitconfig:/home/claudeuser/.gitconfig:ro
+      # Mount Claude config if exists
+      - ./claude.json:/home/claudeuser/.claude.json:ro
+    command: >
+      bash -c "
+      uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
+
+volumes:
+  npm_global:

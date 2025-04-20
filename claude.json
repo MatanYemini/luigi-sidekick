@@ -1,0 +1,47 @@
+{
+  "tools": {
+    "Edit": {
+      "description": "Edit files in the codebase",
+      "allowed": true
+    },
+    "Bash": {
+      "description": "Run shell commands",
+      "allowed": true,
+      "patterns": ["git:*", "npm:*", "ls:*", "cat:*", "find:*", "grep:*"]
+    },
+    "Search": {
+      "description": "Search through the codebase",
+      "allowed": true
+    },
+    "FileSearch": {
+      "description": "Find files by name",
+      "allowed": true
+    },
+    "ListDir": {
+      "description": "List directory contents",
+      "allowed": true
+    },
+    "Read": {
+      "description": "Read file contents",
+      "allowed": true
+    },
+    "Git": {
+      "description": "Perform Git operations",
+      "allowed": true,
+      "patterns": [
+        "git:status",
+        "git:log",
+        "git:diff",
+        "git:add",
+        "git:commit",
+        "git:checkout",
+        "git:branch",
+        "git:push",
+        "git:pull"
+      ]
+    }
+  },
+  "permissionsStrategy": "toolFirst",
+  "skipPromptOnPatternMatch": true,
+  "trustLevel": "medium"
+}
