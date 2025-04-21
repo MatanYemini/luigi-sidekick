@@ -99,6 +99,51 @@ Run OpenAI Codex CLI in the specified repo.
 
 Returns Codex stdout/stderr.
 
+### POST `/luigi-init`
+
+Ensures repositories have a luigi.md file with comprehensive code analysis. If the file doesn't exist, it creates one using Claude Code analysis.
+
+| Field  | Type   | Description                                                                                                  |
+| ------ | ------ | ------------------------------------------------------------------------------------------------------------ |
+| `repo` | string | (Optional) Folder name inside `repos/` (from `/clone`). If not provided, all repositories will be processed. |
+
+Response when providing a specific repo:
+
+- If file already exists: `{ status: "success", message: "luigi.md already exists", path: "<file-path>" }`
+- If file created successfully: `{ status: "success", message: "luigi.md successfully created", path: "<file-path>" }`
+- If file creation partially succeeded: `{ status: "partial_success", message: "Created template luigi.md file..." }`
+
+Response when processing all repos:
+
+```json
+{
+  "status": "success",
+  "repos_processed": 3,
+  "results": [
+    {
+      "repo": "repo1",
+      "result": {
+        "status": "success",
+        "message": "luigi.md already exists",
+        "path": "..."
+      }
+    },
+    {
+      "repo": "repo2",
+      "result": {
+        "status": "success",
+        "message": "luigi.md successfully created",
+        "path": "..."
+      }
+    },
+    {
+      "repo": "repo3",
+      "result": { "status": "error", "message": "Repository not found" }
+    }
+  ]
+}
+```
+
 ---
 
 ## Tips & Notes

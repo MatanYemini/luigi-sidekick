@@ -59,8 +59,15 @@ RUN npm install -g @anthropic-ai/claude-code
 # ------------------------------------------------------------
 # Configure Claude Code permissions (changes infrequently)
 # ------------------------------------------------------------
-COPY claude.json /home/claudeuser/.claude.json
-RUN chown claudeuser:claudeuser /home/claudeuser/.claude.json
+# Create proper Claude config directory structure
+RUN mkdir -p /home/claudeuser/.claude && \
+    chown -R claudeuser:claudeuser /home/claudeuser/.claude && \
+    chmod 755 /home/claudeuser/.claude
+
+# Copy the config file
+COPY claude.json /home/claudeuser/.claude/claude.json
+RUN chown claudeuser:claudeuser /home/claudeuser/.claude/claude.json && \
+    chmod 644 /home/claudeuser/.claude/claude.json
 
 # ------------------------------------------------------------
 # Define default working directory
