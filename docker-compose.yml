@@ -54,6 +54,24 @@ services:
       # Create a volume for Claude config to persist between container runs
       - claude_config:/home/claudeuser/.claude
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+  mcp-atlassian:
+    image: ghcr.io/sooperset/mcp-atlassian:latest
+    container_name: mcp_atlassian
+    ports:
+      - "9000:9000"
+    environment:
+      # Atlassian credentials - these should be set in your .env file
+      - CONFLUENCE_URL=${CONFLUENCE_URL:-}
+      - CONFLUENCE_USERNAME=${CONFLUENCE_USERNAME:-}
+      - CONFLUENCE_API_TOKEN=${CONFLUENCE_API_TOKEN:-}
+      - JIRA_URL=${JIRA_URL:-}
+      - JIRA_USERNAME=${JIRA_USERNAME:-}
+      - JIRA_API_TOKEN=${JIRA_API_TOKEN:-}
+      # Optional SSL verification settings
+      - CONFLUENCE_SSL_VERIFY=${CONFLUENCE_SSL_VERIFY:-true}
+      - JIRA_SSL_VERIFY=${JIRA_SSL_VERIFY:-true}
+    # Use SSE transport on port 9000
+    command: mcp-atlassian --transport sse --port 9000
 
 volumes:
   npm_global:

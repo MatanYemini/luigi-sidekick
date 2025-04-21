@@ -19,9 +19,30 @@ It's designed as a lightweight, reproducible sandbox for experimenting with Code
 - **docker‑compose.yml**
   - `dev` – interactive shell for hacking
   - `api` – runs the FastAPI service on port `8000`
+  - `mcp-atlassian` - runs the MCP server for Atlassian tools on port `9000`
 - **FastAPI app** (`app/main.py`)
-  - `/clone` – clones a repo URL to `repos/<name>`
+  - `/clone` – clones a repo URL to `repos/<n>`
   - `/codex` – runs Codex CLI in that repo
+
+## MCP Atlassian Integration
+
+This project includes the [MCP Atlassian](https://github.com/sooperset/mcp-atlassian) server that provides Model Context Protocol support for Atlassian tools:
+
+- **Confluence** - Create, read, update, and search Confluence pages and spaces
+- **Jira** - Work with Jira issues, projects, sprints, and more
+
+### Key Features
+
+- Access Confluence spaces with `confluence://{space_key}`
+- Access Jira projects with `jira://{project_key}`
+- Search content, manage pages, create issues, and more
+- SSE transport interface on port 9000
+
+To use the MCP Atlassian server:
+
+1. Create a `.env` file based on the `.env.example` template
+2. Add your Atlassian credentials (API tokens, URLs, etc.)
+3. The MCP service is accessible at `http://localhost:9000/sse`
 
 ---
 

@@ -41,6 +41,11 @@
       ]
     }
   },
+  "mcpServers": {
+    "mcp-atlassian": {
+      "url": "http://localhost:9000/sse"
+    }
+  },
   "permissionsStrategy": "toolFirst",
   "skipPromptOnPatternMatch": true,
   "trustLevel": "medium"
