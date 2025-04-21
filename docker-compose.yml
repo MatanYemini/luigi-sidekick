@@ -17,6 +17,18 @@ services:
       - GIT_AUTHOR_EMAIL=${GIT_EMAIL:-luigi@getluigi.com}
       - GIT_COMMITTER_NAME=${GIT_NAME:-luigi}
       - GIT_COMMITTER_EMAIL=${GIT_EMAIL:-luigi@getluigi.com}
+      # Atlassian credentials - these should be set in your .env file
+      - CONFLUENCE_URL=${CONFLUENCE_URL:-}
+      - CONFLUENCE_USERNAME=${CONFLUENCE_USERNAME:-}
+      - CONFLUENCE_API_TOKEN=${CONFLUENCE_API_TOKEN:-}
+      - JIRA_URL=${JIRA_URL:-}
+      - JIRA_USERNAME=${JIRA_USERNAME:-}
+      - JIRA_EMAIL=${JIRA_EMAIL:-}
+      - JIRA_BASE_URL=${JIRA_BASE_URL:-}
+      - JIRA_API_TOKEN=${JIRA_API_TOKEN:-}
+      # Optional SSL verification settings
+      - CONFLUENCE_SSL_VERIFY=${CONFLUENCE_SSL_VERIFY:-true}
+      - JIRA_SSL_VERIFY=${JIRA_SSL_VERIFY:-true}
       # Set the config directory for Claude
       - CLAUDE_CONFIG_DIR=/home/claudeuser/.claude
     volumes:
@@ -30,6 +42,8 @@ services:
       - claude_config:/home/claudeuser/.claude
     command: sleep infinity
     tty: true
+    networks:
+      - luigi-network
   api:
     build:
       context: .
@@ -48,12 +62,26 @@ services:
       - GIT_COMMITTER_EMAIL=${GIT_EMAIL:-luigi@getluigi.com}
       # Set the config directory for Claude
       - CLAUDE_CONFIG_DIR=/home/claudeuser/.claude
+      # Atlassian credentials - these should be set in your .env file
+      - CONFLUENCE_URL=${CONFLUENCE_URL:-}
+      - CONFLUENCE_USERNAME=${CONFLUENCE_USERNAME:-}
+      - CONFLUENCE_API_TOKEN=${CONFLUENCE_API_TOKEN:-}
+      - JIRA_URL=${JIRA_URL:-}
+      - JIRA_USERNAME=${JIRA_USERNAME:-}
+      - JIRA_EMAIL=${JIRA_EMAIL:-}
+      - JIRA_BASE_URL=${JIRA_BASE_URL:-}
+      - JIRA_API_TOKEN=${JIRA_API_TOKEN:-}
+      # Optional SSL verification settings
+      - CONFLUENCE_SSL_VERIFY=${CONFLUENCE_SSL_VERIFY:-true}
+      - JIRA_SSL_VERIFY=${JIRA_SSL_VERIFY:-true}
     volumes:
       - .:/workspace
       - ${HOME}/.gitconfig:/home/claudeuser/.gitconfig:ro
       # Create a volume for Claude config to persist between container runs
       - claude_config:/home/claudeuser/.claude
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - luigi-network
   mcp-atlassian:
     image: ghcr.io/sooperset/mcp-atlassian:latest
     container_name: mcp_atlassian
@@ -66,13 +94,24 @@ services:
       - CONFLUENCE_API_TOKEN=${CONFLUENCE_API_TOKEN:-}
       - JIRA_URL=${JIRA_URL:-}
       - JIRA_USERNAME=${JIRA_USERNAME:-}
+      - JIRA_EMAIL=${JIRA_EMAIL:-}
+      - JIRA_BASE_URL=${JIRA_BASE_URL:-}
       - JIRA_API_TOKEN=${JIRA_API_TOKEN:-}
       # Optional SSL verification settings
       - CONFLUENCE_SSL_VERIFY=${CONFLUENCE_SSL_VERIFY:-true}
       - JIRA_SSL_VERIFY=${JIRA_SSL_VERIFY:-true}
-    # Use SSE transport on port 9000
-    command: mcp-atlassian --transport sse --port 9000
+    # Use SSE transport mode with port 9000
+    command: --transport sse --port 9000
+    # Make sure the container doesn't exit by setting tty and stdin_open
+    tty: true
+    stdin_open: true
+    networks:
+      - luigi-network
 
 volumes:
   npm_global:
   claude_config:
+
+networks:
+  luigi-network:
+    driver: bridge

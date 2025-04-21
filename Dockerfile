@@ -38,7 +38,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
 # ------------------------------------------------------------
 # Install Python dependencies (changes occasionally)
 # ------------------------------------------------------------
-RUN pip install --no-cache-dir fastapi uvicorn[standard]
+RUN pip install --no-cache-dir fastapi uvicorn[standard] httpx
 
 # ------------------------------------------------------------
 # Create non-root user for running Claude Code (rarely changes)
