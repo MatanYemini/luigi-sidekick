@@ -7,7 +7,16 @@
     "Bash": {
       "description": "Run shell commands",
       "allowed": true,
-      "patterns": ["git:*", "npm:*", "ls:*", "cat:*", "find:*", "grep:*"]
+      "patterns": [
+        "git:*",
+        "npm:*",
+        "ls:*",
+        "cat:*",
+        "find:*",
+        "grep:*",
+        "python:*",
+        "go:*"
+      ]
     },
     "Search": {
       "description": "Search through the codebase",

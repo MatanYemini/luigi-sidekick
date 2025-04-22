@@ -1,8 +1,7 @@
-from pydantic import BaseModel, HttpUrl
-from typing import Optional
+"""Models for AI code generation services."""
 
-class RepoRequest(BaseModel):
-    url: HttpUrl
+from pydantic import BaseModel
+from typing import Optional
 
 class CodexRequest(BaseModel):
     repo: str  # name of the repo folder under /repos

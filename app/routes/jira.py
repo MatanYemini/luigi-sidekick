@@ -1,22 +1,27 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException
 import os
-from pydantic import BaseModel, Field
-from typing import Dict, Optional, List, Any
-from app.utils.jira import extract_issue_key_from_url, fetch_jira_issue, extract_text_from_description, check_affected_repositories
+from typing import Dict, Any
 
+# Import models
+from app.models.jira_models import (
+    JiraIssueRequest,
+    JiraExecuteRequest,
+    JiraIssueResponse,
+    JiraExecuteResponse
+)
+
+# Import utility functions
+from app.utils import (
+    extract_issue_key_from_url,
+    fetch_jira_issue,
+    extract_text_from_description,
+    check_affected_repositories,
+    extract_programming_info,
+    execute_ticket_with_claude
+)
+
+# Create the router
 router = APIRouter(prefix="/jira", tags=["jira"])
-
-class JiraIssueRequest(BaseModel):
-    issueId: Optional[str] = Field(None, description="The Jira issue ID (e.g., 38838)")
-    issueUrl: Optional[str] = Field(None, description="URL to the Jira issue")
-
-class JiraIssueResponse(BaseModel):
-    issue_id: str
-    title: str
-    details: str
-    labels: List[str] = []
-    fields: Dict[str, Any] = {}
-    message: str = ""
 
 @router.post("/issue", response_model=JiraIssueResponse)
 async def get_issue_info(request: JiraIssueRequest):
@@ -69,6 +74,61 @@ async def get_issue_info(request: JiraIssueRequest):
             
         return response
             
+    except Exception as e:
+        # Re-raise exceptions from the utility functions
+        raise
+
+@router.post("/execute", response_model=JiraExecuteResponse)
+async def execute_jira_issue(request: JiraExecuteRequest):
+    """
+    Executes the following steps:
+    1. Get the JIRA ticket information
+    2. Extract the relevant affected repositories
+    3. Extract programming-relevant information
+    4. Execute code generation/analysis using Claude Code CLI
+    
+    Accepts either issueId or issueUrl in the request body.
+    
+    Optionally accepts a repository name to run Claude against.
+    """
+    # Validate that at least one of issueId or issueUrl is provided
+    if not request.issueId and not request.issueUrl:
+        raise HTTPException(
+            status_code=400, 
+            detail="Either issueId or issueUrl must be provided"
+        )
+    
+    # Get the issue key from either issueId or issueUrl
+    issue_key = request.issueId if request.issueId else extract_issue_key_from_url(request.issueUrl)
+    
+    try:
+        # Step 1: Fetch the JIRA ticket information
+        issue_data = await fetch_jira_issue(issue_key)
+        
+        # Step 2 & 3: Extract programming-relevant information (including affected repositories)
+        programming_info = extract_programming_info(issue_data)
+        
+        # Check if affected repositories information is available
+        if not programming_info.get("affected_repositories"):
+            # We can still proceed, but with a warning
+            print(f"Warning: No affected repositories found for issue {issue_key} - currently will not run the code at all")
+            raise HTTPException(status_code=400, detail="No affected repositories found for this issue")
+        
+        # Step 4: Execute code generation/analysis using Claude Code CLI
+        claude_response = await execute_ticket_with_claude(programming_info, request.repository)
+        
+        # Create the response
+        response = JiraExecuteResponse(
+            issue_key=issue_key,
+            title=programming_info["title"],
+            analysis=claude_response["analysis"],
+            status=claude_response["status"],
+            affected_repositories=programming_info.get("affected_repositories"),
+            stderr=claude_response.get("stderr")
+        )
+        
+        return response
+        
     except Exception as e:
         # Re-raise exceptions from the utility functions
         raise 

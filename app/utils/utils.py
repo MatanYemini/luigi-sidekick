@@ -1,3 +1,5 @@
+"""General utility functions for the app."""
+
 import os
 import subprocess
 import shutil

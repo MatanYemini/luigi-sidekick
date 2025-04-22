@@ -1,10 +1,12 @@
-import httpx
+"""Utility functions for Jira API integration."""
+
 import os
 import re
+import httpx
+from typing import Dict, Any, Optional, List
 from fastapi import HTTPException
-from typing import Dict, Tuple, Any, Optional
 
-def get_jira_credentials() -> Tuple[str, str, str]:
+def get_jira_credentials():
     """
     Get Jira credentials from environment variables.
     """
@@ -48,6 +50,7 @@ async def fetch_jira_issue(issue_key: str) -> Dict[str, Any]:
     try:
         # Build the Jira REST API URL
         api_url = f"{jira_base_url.rstrip('/')}/rest/api/3/issue/{issue_key}"
+        print(f"Fetching issue from Jira: {api_url}")
         
         # Make the request to the Jira API
         async with httpx.AsyncClient() as client:
@@ -66,7 +69,9 @@ async def fetch_jira_issue(issue_key: str) -> Dict[str, Any]:
                     detail=f"Error from Jira API: {response.text}"
                 )
             
-            return response.json()
+            json_data = response.json()
+            print(f"Title: {json_data.get('fields', {}).get('summary', 'No title')}")
+            return json_data
             
     except httpx.TimeoutException:
         raise HTTPException(status_code=504, detail="Request to Jira API timed out")

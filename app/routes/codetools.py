@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 import subprocess
 import os
 
-from app.models import CodexRequest, ClaudeCodeRequest, LuigiRequest
+from app.models.ai_models import CodexRequest, ClaudeCodeRequest, LuigiRequest
 from app.utils import check_repo_exists
 from app.config import REPOS_DIR
 
@@ -13,7 +13,7 @@ async def run_codex(req: CodexRequest):
     """Run OpenAI Codex CLI in full‑auto mode against a cloned repository.
 
     Expects:
-        - repo: name of an existing directory under /repos (created via /clone)
+        - repo: name of an existing directory under /repos (created via /repos/clone)
         - query: natural‑language prompt for Codex
     """
     repo_path = check_repo_exists(req.repo)
@@ -54,7 +54,7 @@ async def run_claude_code(req: ClaudeCodeRequest):
     """Run Claude Code CLI in non-interactive mode against a cloned repository.
     
     Expects:
-        - repo: name of an existing directory under /repos (created via /clone)
+        - repo: name of an existing directory under /repos (created via /repos/clone)
         - query: natural-language prompt for Claude Code
     """
     repo_path = check_repo_exists(req.repo)
@@ -107,7 +107,7 @@ async def generate_luigi_md(req: LuigiRequest):
     If the file doesn't exist, create it using Claude Code analysis.
     
     Expects:
-        - repo: (optional) name of an existing directory under /repos (created via /clone)
+        - repo: (optional) name of an existing directory under /repos (created via /repos/clone)
                 if not provided, all repositories will be processed
     """
     # Handle case where no specific repo is provided

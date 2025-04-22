@@ -17,6 +17,10 @@ services:
       - GIT_AUTHOR_EMAIL=${GIT_EMAIL:-luigi@getluigi.com}
       - GIT_COMMITTER_NAME=${GIT_NAME:-luigi}
       - GIT_COMMITTER_EMAIL=${GIT_EMAIL:-luigi@getluigi.com}
+      # Bitbucket credentials for repository cloning
+      - BITBUCKET_USERNAME=${BITBUCKET_USERNAME:-}
+      - BITBUCKET_APP_PASSWORD=${BITBUCKET_APP_PASSWORD:-}
+      - BITBUCKET_TOKEN=${BITBUCKET_TOKEN:-}
       # Atlassian credentials - these should be set in your .env file
       - CONFLUENCE_URL=${CONFLUENCE_URL:-}
       - CONFLUENCE_USERNAME=${CONFLUENCE_USERNAME:-}
@@ -60,6 +64,10 @@ services:
       - GIT_AUTHOR_EMAIL=${GIT_EMAIL:-luigi@getluigi.com}
       - GIT_COMMITTER_NAME=${GIT_NAME:-luigi}
       - GIT_COMMITTER_EMAIL=${GIT_EMAIL:-luigi@getluigi.com}
+      # Bitbucket credentials for repository cloning
+      - BITBUCKET_USERNAME=${BITBUCKET_USERNAME:-}
+      - BITBUCKET_APP_PASSWORD=${BITBUCKET_APP_PASSWORD:-}
+      - BITBUCKET_TOKEN=${BITBUCKET_TOKEN:-}
       # Set the config directory for Claude
       - CLAUDE_CONFIG_DIR=/home/claudeuser/.claude
       # Atlassian credentials - these should be set in your .env file
