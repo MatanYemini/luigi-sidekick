@@ -70,22 +70,27 @@ async def clone_repo(req: RepoRequest, bitbucket_creds: dict = Depends(get_bitbu
             print("Warning: No Bitbucket credentials found in environment variables. Attempting to clone without authentication.")
             print(f"URL format: {scheme}://bitbucket.org{path}")
     
-    # Extract repo name from URL (handles both regular and Bitbucket URLs)
-    # This regex handles URLs ending with .git or not
-    match = re.search(r'\/([^\/]+?)(\.git)?$', repo_url)
-    if match:
-        repo_name = match.group(1)
-    else:
-        # Fallback to simple splitting if regex doesn't match
-        repo_name = repo_url.split('/')[-1].replace('.git', '')
-    
-    # For Bitbucket, get both the workspace and repo name to create a proper directory structure
+    # Determine repo name based on repository type
     if is_bitbucket:
-        # Extract workspace/organization name and repo name from path
+        # For Bitbucket: extract just the repo name (last component of the path)
+        # Bitbucket path format is typically /workspace/repo_name
         path_parts = path.strip('/').split('/')
         if len(path_parts) >= 2:
-            workspace_name = path_parts[0]
-            repo_name = f"{workspace_name}/{repo_name}"
+            # Extract just the repository name (last component)
+            repo_name = path_parts[-1].replace('.git', '')
+        else:
+            # Fallback if path doesn't have expected format
+            repo_name = path.strip('/').replace('.git', '')
+        
+        print(f"Extracted Bitbucket repository name: {repo_name}")
+    else:
+        # For other repositories (GitHub, etc.)
+        match = re.search(r'\/([^\/]+?)(\.git)?$', repo_url)
+        if match:
+            repo_name = match.group(1)
+        else:
+            # Fallback to simple splitting if regex doesn't match
+            repo_name = repo_url.split('/')[-1].replace('.git', '')
     
     target_path = get_repo_path(repo_name)
 

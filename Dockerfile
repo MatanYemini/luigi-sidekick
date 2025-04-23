@@ -53,8 +53,10 @@ RUN useradd -m -s /bin/bash -G sudo claudeuser && \
 # ------------------------------------------------------------
 # OpenAI Codex CLI
 RUN npm install -g @openai/codex
-# Anthropic Claude Code CLI
+
+# Anthropic Claude Code CLI + MCPs
 RUN npm install -g @anthropic-ai/claude-code
+RUN claude mcp add context7 -- npx -y @upstash/context7-mcp@latest
 
 # ------------------------------------------------------------
 # Configure Claude Code permissions (changes infrequently)
