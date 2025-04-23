@@ -9,6 +9,11 @@ from app.models.repo_models import RepoRequest
 from app.config import REPOS_DIR
 from app.utils import get_repo_path
 
+# Set MCP timeout environment variables if not already set
+# These control the timeout for MCP server startup and tool execution
+os.environ.setdefault("MCP_TIMEOUT", "20000000")  # 20m milliseconds for server startup
+os.environ.setdefault("MCP_TOOL_TIMEOUT", "20000000")  # 20m milliseconds for tool execution
+
 # Function to get Bitbucket credentials from environment variables
 def get_bitbucket_credentials():
     """Get Bitbucket credentials from environment variables if available."""
