@@ -8,6 +8,47 @@ from app.config import REPOS_DIR
 
 router = APIRouter()
 
+def init_update_submodules(repo_path):
+    """Initialize and update all git submodules in a repository.
+    
+    Args:
+        repo_path: Path to the git repository
+        
+    Returns:
+        dict: Result of the operation with status and messages
+        
+    Raises:
+        subprocess.CalledProcessError: If git commands fail
+    """
+    try:
+        # Initialize submodules
+        subprocess.run(
+            ["git", "submodule", "init"],
+            cwd=repo_path,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        
+        # Update submodules
+        subprocess.run(
+            ["git", "submodule", "update"],
+            cwd=repo_path,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        
+        return {
+            "status": "success",
+            "message": "Git submodules initialized and updated successfully"
+        }
+    except subprocess.CalledProcessError as e:
+        return {
+            "status": "error",
+            "message": f"Failed to initialize or update git submodules: {e.stderr or e.stdout}"
+        }
+
 @router.post("/codex")
 async def run_codex(req: CodexRequest):
     """Run OpenAI Codex CLI in full‑auto mode against a cloned repository.
@@ -17,6 +58,11 @@ async def run_codex(req: CodexRequest):
         - query: natural‑language prompt for Codex
     """
     repo_path = check_repo_exists(req.repo)
+
+    # Initialize and update submodules before running Codex
+    submodules_result = init_update_submodules(repo_path)
+    if submodules_result["status"] == "error":
+        print(f"Warning: {submodules_result['message']}")
 
     # Build the Codex CLI command: codex --approval-mode full-auto "query"
     cmd = [
@@ -58,6 +104,11 @@ async def run_claude_code(req: ClaudeCodeRequest):
         - query: natural-language prompt for Claude Code
     """
     repo_path = check_repo_exists(req.repo)
+    
+    # Initialize and update submodules before running Claude Code
+    submodules_result = init_update_submodules(repo_path)
+    if submodules_result["status"] == "error":
+        print(f"Warning: {submodules_result['message']}")
     
     # Build the Claude Code command: claude -p "query" 
     # Using -p for non-interactive print mode with explicitly allowed tools
@@ -168,6 +219,11 @@ async def process_single_repo(req: LuigiRequest):
     except HTTPException as e:
         # Return the error instead of raising it, to allow processing other repos
         return {"status": "error", "message": e.detail}
+    
+    # Initialize and update submodules before analyzing
+    submodules_result = init_update_submodules(repo_path)
+    if submodules_result["status"] == "error":
+        print(f"Warning: {submodules_result['message']}")
         
     luigi_md_path = os.path.join(repo_path, "luigi.md")
     

@@ -43,6 +43,7 @@ async def clone_repo(req: RepoRequest, bitbucket_creds: dict = Depends(get_bitbu
     - BITBUCKET_TOKEN - Repository Access Token for Bitbucket authentication (fallback)
     
     If the repository already exists, it will be removed and re-cloned.
+    Also initializes and updates all git submodules after cloning.
     """
     repo_url = str(req.url)
     
@@ -129,11 +130,43 @@ async def clone_repo(req: RepoRequest, bitbucket_creds: dict = Depends(get_bitbu
             check=True
         )
         
+        # Initialize and update submodules
+        print("Initializing git submodules...")
+        try:
+            # Initialize submodules
+            subprocess.run(
+                ["git", "submodule", "init"],
+                cwd=target_path,
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            
+            # Update submodules
+            subprocess.run(
+                ["git", "submodule", "update"],
+                cwd=target_path,
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            
+            print("Git submodules initialized and updated successfully")
+            submodule_status = "success"
+        except subprocess.CalledProcessError as e:
+            submodule_error = e.stderr or e.stdout
+            print(f"Warning: Failed to initialize or update git submodules: {submodule_error}")
+            submodule_status = "error"
+        
         return {
             "status": "success", 
             "path": target_path,
             "repo_name": repo_name,
-            "repo_type": "bitbucket" if is_bitbucket else "github/other"
+            "repo_type": "bitbucket" if is_bitbucket else "github/other",
+            "submodules": {
+                "status": submodule_status,
+                "message": "Git submodules initialized and updated successfully" if submodule_status == "success" else "Failed to initialize or update git submodules"
+            }
         }
         
     except subprocess.CalledProcessError as e:
